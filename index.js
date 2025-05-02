@@ -4,14 +4,19 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
+// Middleware
+app.use(cors());
+app.use(express.json()); // Habilita JSON en req.body
+
+// Rutas
 app.post('/games', async (req, res) => {
   try {
+    const query = req.body.query;
+
     const response = await axios.post(
       'https://api.igdb.com/v4/games',
-      req.body.query,
+      query,
       {
         headers: {
           'Client-ID': process.env.CLIENT_ID,
@@ -20,17 +25,21 @@ app.post('/games', async (req, res) => {
         }
       }
     );
+
     res.json(response.data);
   } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Error en la API de IGDB' });
+    console.error('Error en /games:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Error en la API de IGDB (/games)' });
   }
 });
+
 app.post('/genres', async (req, res) => {
   try {
+    const query = req.body.query;
+
     const response = await axios.post(
       'https://api.igdb.com/v4/genres',
-      req.body.query,
+      query,
       {
         headers: {
           'Client-ID': process.env.CLIENT_ID,
@@ -39,6 +48,7 @@ app.post('/genres', async (req, res) => {
         }
       }
     );
+
     res.json(response.data);
   } catch (error) {
     console.error('Error en /genres:', error.response?.data || error.message);
@@ -46,9 +56,8 @@ app.post('/genres', async (req, res) => {
   }
 });
 
-
-const PORT = 3000;
-app.listen(PORT, async () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-
+// Puerto
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });
